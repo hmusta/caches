@@ -67,6 +67,22 @@ class fixed_sized_cache
         }
     }
 
+    std::unique_ptr<Value> TryGet(const Key &key) const
+    {
+        std::unique_ptr<Value> ret;
+
+        read_guard lock{safe_op};
+        auto elem_it = FindElem(key);
+
+        if (elem_it != cache_items_map.end())
+        {
+            cache_policy.Touch(key);
+            ret = std::make_unique<Value>(elem_it->second);
+        }
+
+        return ret;
+    }
+
     Value Get(const Key &key) const
     {
         read_guard lock{safe_op};
